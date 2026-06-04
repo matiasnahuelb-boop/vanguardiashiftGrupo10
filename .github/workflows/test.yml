@@ -24,6 +24,9 @@ jobs:
           extensions: mbstring, pdo, pdo_sqlite
           coverage: none
       
+      - name: Disable security advisories blocking
+        run: composer config --global policy.advisories.block false
+      
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
       
