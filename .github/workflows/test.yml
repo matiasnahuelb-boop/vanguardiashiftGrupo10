@@ -1,77 +1,46 @@
-# .github/workflows/test.yml
-# Pipeline CI/CD para VanguardiaShift — Backend Laravel
-# Se activa en cada push/PR a main o develop.
-# Si todos los tests pasan, el código puede integrarse.
-
-name: CI — Tests VanguardiaShift Backend
+name: Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
-    name: PHP ${{ matrix.php-version }} — Feature Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.2']
-
+    
+    defaults:
+      run:
+        working-directory: ./backend
+    
     steps:
-      - name: 📥 Checkout del código
-        uses: actions/checkout@v4
-
-      - name: 🐘 Configurar PHP ${{ matrix.php-version }}
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
-          extensions: mbstring, bcmath, pdo, pdo_sqlite, sqlite3, xml, json
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_sqlite
           coverage: none
-        env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 💾 Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
-
-      - name: 📦 Instalar dependencias
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: ⚙️ Configurar entorno de testing
-        run: |
-          cp .env.example .env
-          echo "DB_CONNECTION=sqlite"  >> .env
-          echo "DB_DATABASE=:memory:"  >> .env
-          echo "APP_ENV=testing"        >> .env
-
-      - name: 🔑 Generar Application Key
+      
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+      
+      - name: Generate key
         run: php artisan key:generate
-
-      - name: 🗃️ Ejecutar migraciones (SQLite en memoria)
-        run: php artisan migrate --force
+      
+      - name: Run migrations
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-
-      - name: 🧪 Ejecutar 6 tests PHPUnit
-        run: php artisan test --parallel
+          DB_DATABASE: ':memory:'
+        run: php artisan migrate
+      
+      - name: Run tests
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-          APP_ENV: testing
-
-  # deploy:
-  #   needs: test
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Deploy a Railway
-  #       uses: bervProject/railway-deploy@v1.0.0
-  #       with:
-  #         railway_token: ${{ secrets.RAILWAY_TOKEN }}
-# VanguardiaShift - Pipeline CI/CD
+          DB_DATABASE: ':memory:'
+        run: php artisan test
