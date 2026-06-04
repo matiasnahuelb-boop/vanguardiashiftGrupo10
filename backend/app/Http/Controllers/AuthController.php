@@ -99,4 +99,4 @@ class AuthController extends Controller
             'usuario' => $request->user(),
         ], 200);
     }
-}
+}// VanguardiaShift - Autenticacion con Sanctum
