@@ -69,4 +69,4 @@ class ProfesionalController extends Controller
             'horarios_ocupados' => $turnosOcupados,
         ], 200);
     }
-}
+}// VanguardiaShift - Listado de profesionales
