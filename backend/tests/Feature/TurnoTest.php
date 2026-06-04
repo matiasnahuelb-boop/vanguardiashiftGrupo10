@@ -143,3 +143,4 @@ class TurnoTest extends TestCase
         $this->assertDatabaseHas('turnos', ['id' => $turno->id, 'estado' => 'reservado']);
     }
 }
+// VanguardiaShift - 6 Feature Tests
