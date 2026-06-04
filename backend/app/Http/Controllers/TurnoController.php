@@ -126,4 +126,4 @@ class TurnoController extends Controller
             'data'         => $turnos,
         ], 200);
     }
-}
+}// VanguardiaShift - Reserva de turnos con concurrencia
