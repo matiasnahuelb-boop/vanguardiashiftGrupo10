@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    phpunit.xml
+    Configuración de PHPUnit para VanguardiaShift.
+
+    Configuraciones clave:
+    - DB_CONNECTION=sqlite + DB_DATABASE=:memory: → base de datos en RAM para tests rápidos
+    - APP_ENV=testing → carga configuraciones específicas de testing
+    - Los tests de la carpeta tests/Feature/ son Feature Tests (integración)
+    - Los tests de la carpeta tests/Unit/ son Unit Tests (funciones aisladas)
+-->
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+>
+    <!-- Directorios donde viven los tests -->
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <!-- Configurar cobertura de código -->
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Http/Middleware</directory>
+        </exclude>
+    </source>
+
+    <!--
+        Variables de entorno para el entorno de testing.
+        Estas sobrescriben las del archivo .env durante los tests.
+
+        DB_CONNECTION=sqlite + DB_DATABASE=:memory: = base de datos en RAM.
+        Se crea en milisegundos y se destruye al terminar cada test.
+        No requiere servidor MySQL externo.
+    -->
+    <php>
+        <env name="APP_ENV"                  value="testing"/>
+        <env name="BCRYPT_ROUNDS"            value="4"/>
+        <!-- 4 rondas en tests (vs 12 en producción) acelera la generación de contraseñas -->
+        <env name="CACHE_STORE"              value="array"/>
+        <env name="DB_CONNECTION"            value="sqlite"/>
+        <env name="DB_DATABASE"              value=":memory:"/>
+        <env name="MAIL_MAILER"              value="array"/>
+        <env name="QUEUE_CONNECTION"         value="sync"/>
+        <env name="SESSION_DRIVER"           value="array"/>
+        <env name="TELESCOPE_ENABLED"        value="false"/>
+    </php>
+</phpunit>

@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VanguardiaShift — Documento Técnico</title>
+<style>
+:root{--navy:#0D1B4B;--teal:#028090;--tealDk:#015F6B;--tealLt:#E1F5EE;
+--blue:#1D4ED8;--blueLt:#EFF6FF;--amber:#B45309;--amberLt:#FEF3C7;
+--coral:#9A3412;--coralLt:#FEE2E2;--green:#065F46;--greenLt:#ECFDF5;
+--purple:#4C1D95;--purpLt:#EDE9FE;
+--g50:#F8FAFC;--g100:#F1F5F9;--g200:#E2E8F0;--g300:#CBD5E1;
+--g400:#94A3B8;--g500:#64748B;--g600:#475569;--g700:#334155;--g800:#1E293B;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;
+background:var(--g50);color:var(--g800);line-height:1.6}
+.container{max-width:900px;margin:0 auto;padding:20px}
+
+.header{background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:16px;
+padding:28px 32px;color:white;margin-bottom:24px}
+.header h1{font-size:24px;font-weight:800;margin-bottom:6px}
+.header p{font-size:13px;opacity:.85}
+.header-meta{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.header-meta span{font-size:11px;background:rgba(255,255,255,.15);padding:4px 12px;
+border-radius:20px;font-weight:500}
+
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;position:sticky;top:0;
+background:var(--g50);padding:12px 0;z-index:50;border-bottom:1px solid var(--g200)}
+.nav a{text-decoration:none;font-size:12px;font-weight:600;padding:7px 14px;
+border-radius:8px;background:white;border:1px solid var(--g200);color:var(--g600);}
+.nav a:hover{background:var(--g100);color:var(--navy)}
+.nav a.active{background:var(--navy);color:white;border-color:var(--navy)}
+
+.section{background:white;border:1px solid var(--g200);border-radius:14px;padding:24px;
+margin-bottom:20px}
+.section h2{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:16px;
+display:flex;align-items:center;gap:10px}
+.section h2 .num{width:28px;height:28px;border-radius:8px;background:var(--navy);
+color:white;display:flex;align-items:center;justify-content:center;font-size:13px;
+font-weight:700;flex-shrink:0}
+.section h3{font-size:15px;font-weight:700;color:var(--g700);margin:20px 0 10px}
+.section h4{font-size:13px;font-weight:700;color:var(--g600);margin:16px 0 8px;
+text-transform:uppercase;letter-spacing:.04em}
+
+.concept{background:var(--blueLt);border:1px solid #BFDBFE;border-radius:10px;
+padding:14px 16px;margin:12px 0}
+.concept-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;
+letter-spacing:.04em;margin-bottom:6px}
+.concept p{font-size:13px;color:var(--g700);margin:0}
+.concept code{background:rgba(255,255,255,.6);padding:2px 6px;border-radius:4px;
+font-size:12px;color:var(--navy)}
+
+.code-block{background:var(--g800);border-radius:10px;padding:16px 18px;margin:12px 0;
+overflow-x:auto}
+.code-block pre{color:#E2E8F0;font-size:12px;line-height:1.5;margin:0;
+font-family:'SF Mono',Monaco,'Courier New',monospace;white-space:pre;
+overflow-x:auto}
+.code-block .comment{color:#94A3B8}
+.code-block .keyword{color:#F472B6}
+.code-block .string{color:#A7F3D0}
+.code-block .function{color:#60A5FA}
+
+/* Diagrama ASCII */
+.diagram-ascii{background:#0D1B4B;border-radius:10px;padding:20px;margin:16px 0;
+overflow-x:auto;font-family:'SF Mono',Monaco,'Courier New',monospace;
+font-size:12px;line-height:1.5;color:#E2E8F0}
+.diagram-ascii .dia-label{color:#00C9B1;font-weight:700}
+.diagram-ascii .dia-box{color:#A7F3D0}
+.diagram-ascii .dia-arrow{color:#F472B6}
+.diagram-ascii .dia-note{color:#94A3B8;font-size:11px}
+.diagram-ascii .dia-title{color:white;font-weight:700;font-size:13px;margin-bottom:12px}
+
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--g100);text-align:left;padding:10px 12px;font-size:11px;
+font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--g500);
+border-bottom:2px solid var(--g200)}
+td{padding:10px 12px;border-bottom:1px solid var(--g100);vertical-align:top}
+tr:hover td{background:var(--g50)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;
+border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-teal{background:var(--tealLt);color:var(--tealDk)}
+.b-green{background:var(--greenLt);color:var(--green)}
+.b-red{background:var(--coralLt);color:var(--coral)}
+.b-blue{background:var(--blueLt);color:var(--blue)}
+.b-amber{background:var(--amberLt);color:var(--amber)}
+.b-purple{background:var(--purpLt);color:var(--purple)}
+
+.alert{background:var(--amberLt);border:1px solid #FDE68A;border-radius:10px;
+padding:14px 16px;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.alert-icon{width:20px;height:20px;border-radius:50%;background:var(--amber);
+display:flex;align-items:center;justify-content:center;color:white;font-size:11px;
+font-weight:700;flex-shrink:0;margin-top:2px}
+.alert p{font-size:13px;color:var(--amber);margin:0}
+
+ul,ol{margin:8px 0 8px 20px}
+li{margin:4px 0;font-size:13px}
+
+.footer{text-align:center;padding:24px;color:var(--g400);font-size:12px;
+border-top:1px solid var(--g200);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+<h1>📋 VanguardiaShift — Documento Técnico</h1>
+<p>Trabajo Práctico Final · Programación de Vanguardia · Docente: Esteban Calcagno</p>
+<div class="header-meta">
+<span>📅 Entrega: 19 de junio 2026</span>
+<span>👥 Grupo: [Nombre 1] · [Nombre 2] · [Nombre 3]</span>
+<span>🏷️ Opción 3: Plataforma de Gestión de Turnos</span>
+</div>
+</div>
+
+<nav class="nav">
+<a href="#descripcion" class="active">1. Descripción</a>
+<a href="#arquitectura">2. Arquitectura</a>
+<a href="#frontend">3. Frontend</a>
+<a href="#backend">4. Backend</a>
+<a href="#testing">5. Testing</a>
+<a href="#cicd">6. CI/CD</a>
+<a href="#seguridad">7. Seguridad</a>
+</nav>
+
+<section class="section" id="descripcion">
+<h2><span class="num">1</span>Descripción del Sistema</h2>
+
+<h3>1.1 ¿Qué problema resuelve?</h3>
+<p>En consultorios que gestionan turnos por teléfono se repiten cuatro problemas:</p>
+<ul>
+<li>La línea telefónica colapsa en las primeras horas de atención.</li>
+<li>Los registros en papel generan dobles reservas.</li>
+<li>El profesional no conoce su agenda hasta llegar al consultorio.</li>
+<li>No existe historial digital de cancelaciones ni trazabilidad.</li>
+</ul>
+
+<p>VanguardiaShift digitaliza el proceso completo. El paciente reserva desde el navegador en cualquier momento y el sistema valida que el horario esté libre antes de confirmarlo.</p>
+
+<h3>1.2 Roles del sistema</h3>
+<table>
+<tr><th>Rol</th><th>Acciones permitidas</th><th>Restricción</th></tr>
+<tr><td><span class="badge b-blue">Cliente</span></td><td>Reservar turnos, ver disponibilidad, cancelar sus propios turnos</td><td>No puede ver ni modificar turnos de otros usuarios</td></tr>
+<tr><td><span class="badge b-teal">Profesional</span></td><td>Ver su agenda, completar o cancelar sus turnos</td><td>Solo gestiona sus propios turnos</td></tr>
+<tr><td><span class="badge b-purple">Admin</span></td><td>Acceso completo al sistema, gestión de usuarios</td><td>—</td></tr>
+</table>
+
+<h3>1.3 Objetivos del sistema</h3>
+<ol>
+<li>Eliminar las reservas telefónicas para consultorios de hasta 10 profesionales.</li>
+<li>Impedir que un mismo horario se reserve simultáneamente por dos personas (control de concurrencia).</li>
+<li>Ofrecer agenda en tiempo real para el profesional desde cualquier dispositivo.</li>
+<li>Mantener historial completo e inalterable, incluidos los turnos cancelados.</li>
+<li>Implementar autenticación con tokens revocables y autorización estricta por rol.</li>
+</ol>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Control de concurrencia</div>
+<p>Es la capacidad de un sistema para manejar múltiples operaciones simultáneas sin que se generen inconsistencias. En este caso, evita que dos usuarios reserven el mismo horario al mismo tiempo.</p>
+</div>
+</section>
+
+<section class="section" id="arquitectura">
+<h2><span class="num">2</span>Arquitectura Propuesta</h2>
+
+<h3>2.1 Diseño desacoplado</h3>
+<p>El frontend (interfaz de usuario) y el backend (servidor) son proyectos independientes. No comparten código ni servidor. Se comunican exclusivamente mediante el protocolo HTTP, enviando y recibiendo datos en formato JSON.</p>
+
+<h3>2.2 Diagrama de arquitectura</h3>
+
+<div class="diagram-ascii">
+<div class="dia-title"># Diagrama de arquitectura VanguardiaShift</div>
+<pre>
+<span class="dia-label">  ┌─────────────────────────────┐</span>
+<span class="dia-label">  │      FRONTEND (Vue.js 3)    │</span>
+<span class="dia-label">  │                             │</span>
+<span class="dia-box">  │   BookingCalendar.vue       │</span>
+<span class="dia-box">  │   LoginView.vue             │</span>
+<span class="dia-box">  │   DashboardView.vue         │</span>
+<span class="dia-box">  │   AgendaView.vue            │</span>
+<span class="dia-box">  │   api.js (Axios)            │</span>
+<span class="dia-label">  │                             │</span>
+<span class="dia-label">  │   Vercel (hosting)          │</span>
+<span class="dia-label">  └─────────────┬───────────────┘</span>
+<span class="dia-arrow">                │ HTTP/JSON + Bearer Token</span>
+<span class="dia-arrow">                │</span>
+<span class="dia-arrow">                ▼</span>
+<span class="dia-label">  ┌─────────────────────────────┐</span>
+<span class="dia-label">  │      BACKEND (Laravel 11)   │</span>
+<span class="dia-label">  │                             │</span>
+<span class="dia-box">  │   AuthController.php        │</span>
+<span class="dia-box">  │   TurnoController.php       │</span>
+<span class="dia-box">  │   ProfesionalController.php │</span>
+<span class="dia-box">  │   CheckRole.php             │</span>
+<span class="dia-box">  │   StoreTurnoRequest.php     │</span>
+<span class="dia-label">  │                             │</span>
+<span class="dia-label">  │   Railway (hosting)         │</span>
+<span class="dia-label">  └─────────────┬───────────────┘</span>
+<span class="dia-arrow">                │ SQL / Eloquent ORM</span>
+<span class="dia-arrow">                │</span>
+<span class="dia-arrow">                ▼</span>
+<span class="dia-label">  ┌─────────────────────────────┐</span>
+<span class="dia-label">  │    BASE DE DATOS (MySQL)    │</span>
+<span class="dia-label">  │                             │</span>
+<span class="dia-box">  │   users                     │</span>
+<span class="dia-box">  │   turnos                    │</span>
+<span class="dia-box">  │   personal_access_tokens    │</span>
+<span class="dia-label">  │                             │</span>
+<span class="dia-label">  │   MySQL 8.0 (Railway)       │</span>
+<span class="dia-label">  └─────────────────────────────┘</span>
+</pre>
+<div class="dia-note">
+Flujo de una reserva: Frontend selecciona médico → Backend valida disponibilidad (lockForUpdate) → 
+Base de datos guarda el turno → Backend responde HTTP 201 → Frontend muestra confirmación
+</div>
+</div>
+
+<h3>2.3 ¿Qué significa "desacoplado"?</h3>
+<p>En una arquitectura tradicional (acoplada), el frontend y el backend viven en el mismo servidor y comparten código. En una arquitectura desacoplada:</p>
+<ul>
+<li>El frontend es una aplicación independiente que corre en el navegador del usuario.</li>
+<li>El backend es una API independiente que corre en un servidor remoto.</li>
+<li>Ambos se comunican mediante peticiones HTTP con formato JSON.</li>
+<li>Cada uno puede cambiar o escalar sin afectar al otro.</li>
+</ul>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: API REST</div>
+<p>API (Application Programming Interface) es un conjunto de reglas que permite que dos sistemas se comuniquen. REST (Representational State Transfer) es un estilo de diseño que usa URLs para identificar recursos y métodos HTTP para operar sobre ellos: <code>GET</code> para leer, <code>POST</code> para crear, <code>PUT</code> para actualizar, <code>DELETE</code> para eliminar.</p>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: JSON</div>
+<p>JSON (JavaScript Object Notation) es un formato de texto para representar datos estructurados. Es legible por humanos y parseable por máquinas. Ejemplo: <code>{"nombre": "Carlos", "edad": 30}</code></p>
+</div>
+
+<h3>2.4 Flujo de comunicación</h3>
+<p>Cuando un usuario reserva un turno, ocurre este flujo:</p>
+<ol>
+<li>El usuario selecciona un médico en el frontend (Vue.js).</li>
+<li>Vue.js envía una petición <code>GET /api/profesionales</code> al backend (Laravel).</li>
+<li>Laravel consulta la base de datos (MySQL) y devuelve la lista en formato JSON.</li>
+<li>Vue.js recibe el JSON y muestra los médicos en pantalla.</li>
+<li>El usuario selecciona fecha y hora.</li>
+<li>Vue.js envía <code>GET /api/profesionales/{id}/disponibilidad?fecha=YYYY-MM-DD</code>.</li>
+<li>Laravel consulta qué horarios están ocupados y devuelve los disponibles.</li>
+<li>El usuario confirma la reserva.</li>
+<li>Vue.js envía <code>POST /api/turnos</code> con los datos del turno.</li>
+<li>Laravel ejecuta <code>lockForUpdate()</code> dentro de una transacción para verificar disponibilidad.</li>
+<li>Si el horario está libre, Laravel inserta el turno en MySQL y responde con HTTP 201.</li>
+<li>Vue.js muestra la confirmación al usuario.</li>
+</ol>
+
+<h3>2.5 Ventajas de la arquitectura desacoplada</h3>
+<table>
+<tr><th>Ventaja</th><th>Descripción</th></tr>
+<tr><td><strong>Independencia de equipos</strong></td><td>Un integrante puede trabajar en el frontend sin necesidad de que el backend esté terminado. Ambos equipos acuerdan la estructura del JSON y trabajan en paralelo.</td></tr>
+<tr><td><strong>Escalabilidad selectiva</strong></td><td>Si el frontend recibe mucho tráfico (muchos usuarios navegando), se puede replicar solo esa capa sin modificar el backend. Si el backend tiene mucha carga de procesamiento, se escala solo él.</td></tr>
+<tr><td><strong>Reutilización del backend</strong></td><td>La misma API de Laravel puede alimentar una aplicación móvil en el futuro sin modificar una línea de código del backend.</td></tr>
+<tr><td><strong>Flexibilidad tecnológica</strong></td><td>En el futuro se puede reemplazar Vue.js por React o Angular sin tocar el backend. O se puede reemplazar Laravel por Node.js sin tocar el frontend.</td></tr>
+<tr><td><strong>Despliegue independiente</strong></td><td>Cada capa se despliega en su propio servidor. Un cambio en el frontend no requiere reiniciar el backend.</td></tr>
+</table>
+
+<h3>2.6 Justificación de tecnologías</h3>
+
+<h4>Vue.js 3 (elegido sobre React y Angular)</h4>
+<table>
+<tr><th>Criterio</th><th>Vue.js 3</th><th>React</th><th>Angular</th></tr>
+<tr><td>Curva de aprendizaje</td><td>Accesible para principiantes</td><td>Requiere conocimiento de JSX y hooks</td><td>Complejo, orientado a empresas grandes</td></tr>
+<tr><td>Documentación</td><td>Disponible en español</td><td>Principalmente en inglés</td><td>Principalmente en inglés</td></tr>
+<tr><td>Tamaño del bundle</td><td>~10 KB (runtime)</td><td>~40 KB</td><td>~150 KB</td></tr>
+<tr><td>Composition API</td><td>Organiza código por funcionalidad</td><td>Hooks (useState, useEffect)</td><td>Servicios y módulos</td></tr>
+<tr><td>Opinión del framework</td><td>Opinión flexible</td><td>Mínima opinión (más decisiones del desarrollador)</td><td>Máxima opinión (estructura rígida)</td></tr>
+</table>
+<p><strong>Decisión:</strong> Vue.js 3 porque el equipo no tiene experiencia previa en desarrollo frontend. La curva de aprendizaje es más accesible, la documentación está en español, y la Composition API permite organizar el código de forma intuitiva.</p>
+
+<h4>Laravel 11 (elegido sobre Node.js + Express)</h4>
+<table>
+<tr><th>Componente</th><th>Laravel 11</th><th>Node.js + Express</th></tr>
+<tr><td>Autenticación</td><td>Sanctum incluido</td><td>Requiere instalar Passport o JWT manualmente</td></tr>
+<tr><td>ORM</td><td>Eloquent incluido</td><td>Requiere instalar Sequelize o TypeORM</td></tr>
+<tr><td>Validación</td><td>Form Requests incluidos</td><td>Requiere instalar Joi o express-validator</td></tr>
+<tr><td>Testing</td><td>PHPUnit incluido</td><td>Requiere instalar Jest o Mocha</td></tr>
+<tr><td>Migraciones</td><td>Incluidas</td><td>Requiere instalar Knex o TypeORM</td></tr>
+<tr><td>Seguridad</td><td>CSRF, XSS, SQL injection protegidos por defecto</td><td>Requiere configurar manualmente</td></tr>
+</table>
+<p><strong>Decisión:</strong> Laravel 11 porque incluye todas las herramientas necesarias sin configuración adicional. Con Node.js + Express, el equipo tendría que investigar, evaluar e integrar cada librería por separado, lo cual aumenta la complejidad para un equipo sin experiencia.</p>
+
+<h4>Sanctum (elegido sobre JWT)</h4>
+<table>
+<tr><th>Característica</th><th>Sanctum</th><th>JWT</th></tr>
+<tr><td>Almacenamiento del token</td><td>Base de datos (tabla personal_access_tokens)</td><td>Cliente (localStorage o cookie)</td></tr>
+<tr><td>Revocación</td><td>Inmediata: delete() borra el token de la DB</td><td>No se puede revocar antes de expirar</td></tr>
+<tr><td>Expiración</td><td>Controlada por el servidor</td><td>Controlada por el payload del token</td></tr>
+<tr><td>Complejidad</td><td>Configuración mínima</td><td>Requiere configurar claves, algoritmos, refresh tokens</td></tr>
+</table>
+<p><strong>Decisión:</strong> Sanctum porque los tokens se almacenan en la base de datos. Al cerrar sesión, el token se elimina y deja de funcionar instantáneamente. Con JWT, un token robado seguiría siendo válido hasta su fecha de expiración, incluso después del logout.</p>
+
+<h4>SQLite :memory: (elegido sobre MySQL en tests)</h4>
+<table>
+<tr><th>Aspecto</th><th>SQLite :memory:</th><th>MySQL</th></tr>
+<tr><td>Tiempo de ejecución</td><td>~2 segundos para 6 tests</td><td>~15-30 segundos (incluye conexión)</td></tr>
+<tr><td>Configuración</td><td>Sin servidor, sin credenciales</td><td>Requiere servidor MySQL corriendo</td></tr>
+<tr><td>Aislamiento</td><td>Cada test tiene su propia base limpia</td><td>Requiere truncar tablas entre tests</td></tr>
+<tr><td>CI/CD</td><td>Funciona en cualquier máquina virtual</td><td>Requiere instalar MySQL en la VM</td></tr>
+</table>
+<p><strong>Decisión:</strong> SQLite :memory: porque los tests verifican el comportamiento de la aplicación, no el motor de base de datos. SQLite soporta todas las operaciones necesarias (transacciones, índices, foreign keys). La velocidad de ejecución es crítica para que el pipeline de CI/CD sea eficiente.</p>
+
+<h4>GitHub Actions (elegido sobre CircleCI)</h4>
+<table>
+<tr><th>Aspecto</th><th>GitHub Actions</th><th>CircleCI</th></tr>
+<tr><td>Integración</td><td>Nativa con el repositorio</td><td>Requiere configurar integración externa</td></tr>
+<tr><td>Costo</td><td>Gratuito para repositorios públicos</td><td>Gratuito con límites, luego pago</td></tr>
+<tr><td>Configuración</td><td>Archivo YAML en el repo</td><td>Archivo YAML + configuración web</td></tr>
+<tr><td>Marketplace</td><td>Miles de actions preconfiguradas</td><td>Orbs (menor variedad)</td></tr>
+</table>
+<p><strong>Decisión:</strong> GitHub Actions porque está integrado nativamente con el repositorio. No requiere cuenta adicional ni configuración externa. El archivo .github/workflows/test.yml vive en el mismo repo que el código.</p>
+
+<h3>2.7 Modelo de datos (Entidad-Relación)</h3>
+
+<h4>Tabla: users</h4>
+<table>
+<tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
+<tr><td>id</td><td>bigint (PK)</td><td>Identificador único autoincremental</td></tr>
+<tr><td>name</td><td>string</td><td>Nombre completo del usuario</td></tr>
+<tr><td>email</td><td>string (unique)</td><td>Correo electrónico, índice único</td></tr>
+<tr><td>password</td><td>string</td><td>Contraseña hasheada con bcrypt</td></tr>
+<tr><td>rol</td><td>enum</td><td>Valores posibles: cliente, profesional, admin</td></tr>
+<tr><td>especialidad</td><td>string (nullable)</td><td>Solo para profesionales (ej: "Cardiología")</td></tr>
+<tr><td>activo</td><td>boolean</td><td>true = usuario habilitado, false = desactivado</td></tr>
+<tr><td>created_at</td><td>timestamp</td><td>Fecha de creación automática</td></tr>
+<tr><td>updated_at</td><td>timestamp</td><td>Fecha de última modificación</td></tr>
+<tr><td>deleted_at</td><td>timestamp (nullable)</td><td>Borrado lógico (SoftDelete)</td></tr>
+</table>
+
+<h4>Tabla: turnos</h4>
+<table>
+<tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
+<tr><td>id</td><td>bigint (PK)</td><td>Identificador único</td></tr>
+<tr><td>cliente_id</td><td>bigint (FK)</td><td>Referencia a users.id del paciente</td></tr>
+<tr><td>profesional_id</td><td>bigint (FK)</td><td>Referencia a users.id del médico</td></tr>
+<tr><td>fecha_hora</td><td>datetime</td><td>Fecha y hora exacta del turno</td></tr>
+<tr><td>estado</td><td>enum</td><td>reservado, confirmado, completado, cancelado</td></tr>
+<tr><td>motivo</td><td>string (nullable)</td><td>Razón de la consulta</td></tr>
+<tr><td>notas_cliente</td><td>text (nullable)</td><td>Notas adicionales del paciente</td></tr>
+<tr><td>notas_profesional</td><td>text (nullable)</td><td>Notas post-consulta del médico</td></tr>
+<tr><td>created_at</td><td>timestamp</td><td>Fecha de creación</td></tr>
+<tr><td>updated_at</td><td>timestamp</td><td>Fecha de última modificación</td></tr>
+<tr><td>deleted_at</td><td>timestamp (nullable)</td><td>Borrado lógico (SoftDelete)</td></tr>
+</table>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Clave foránea (Foreign Key)</div>
+<p>Es una columna en una tabla que referencia la clave primaria de otra tabla. Establece una relación entre registros. En este caso, <code>cliente_id</code> y <code>profesional_id</code> en la tabla <code>turnos</code> referencian <code>id</code> en la tabla <code>users</code>. Esto garantiza que un turno siempre esté asociado a usuarios existentes.</p>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Índice compuesto</div>
+<p>Es un índice de base de datos que abarca múltiples columnas. En la tabla <code>turnos</code>, el índice <code>(profesional_id, fecha_hora)</code> optimiza la consulta más frecuente del sistema: "¿hay algún turno para este profesional en este horario?". Sin este índice, la base de datos recorrería toda la tabla (full scan). Con el índice, va directamente al registro.</p>
+</div>
+</section>
+
+<section class="section" id="frontend">
+<h2><span class="num">3</span>Frontend — Vue.js 3</h2>
+
+<h3>3.1 ¿Qué es Vue.js 3?</h3>
+<p>Vue.js es un framework de JavaScript para construir interfaces de usuario. La versión 3 introduce la <strong>Composition API</strong>, que permite organizar el código por funcionalidad en lugar de por tipo de elemento (datos, métodos, propiedades computadas).</p>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Composition API vs Options API</div>
+<p><strong>Options API (Vue 2):</strong> Organiza el código en bloques separados: <code>data</code>, <code>methods</code>, <code>computed</code>, <code>mounted</code>. Cada funcionalidad del sistema queda dispersa en múltiples bloques.</p>
+<p><strong>Composition API (Vue 3):</strong> Organiza el código por funcionalidad. Todo lo relacionado con "reserva de turnos" (estado, métodos, propiedades) vive junto en el mismo bloque de código. Esto facilita la lectura y el mantenimiento.</p>
+</div>
+
+<h3>3.2 Archivos principales del frontend</h3>
+<table>
+<tr><th>Archivo</th><th>Responsabilidad</th><th>Concepto clave</th></tr>
+<tr><td><code>BookingCalendar.vue</code></td><td>Flujo de reserva en 3 pasos: médico → fecha/horario → confirmación</td><td>Componente reutilizable con estado interno</td></tr>
+<tr><td><code>LoginView.vue</code></td><td>Pantalla de login con credenciales de demo</td><td>Formulario con validación de campos</td></tr>
+<tr><td><code>DashboardView.vue</code></td><td>Panel post-login con opciones según el rol del usuario</td><td>Renderizado condicional por rol</td></tr>
+<tr><td><code>AgendaView.vue</code></td><td>Agenda del profesional con filtro por fecha y cambio de estado</td><td>Listado dinámico con acciones</td></tr>
+<tr><td><code>api.js</code></td><td>Axios configurado con interceptor de token Bearer</td><td>Cliente HTTP centralizado</td></tr>
+</table>
+
+<h3>3.3 Flujo de reserva — 3 pasos</h3>
+
+<h4>Paso 1: Seleccionar profesional</h4>
+<p>Al montarse el componente, se ejecuta <code>onMounted()</code> que llama a <code>cargarProfesionales()</code>. Esta función hace una petición <code>GET /api/profesionales</code> al backend y recibe un array de objetos JSON con los datos de cada médico.</p>
+
+<div class="code-block">
+<pre><span class="comment">// BookingCalendar.vue — Paso 1</span>
+<span class="keyword">const</span> <span class="function">cargarProfesionales</span> = <span class="keyword">async</span> () => {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> api.<span class="function">get</span>(<span class="string">'/api/profesionales'</span>)
+  profesionales.value = response.data.data
+}</pre>
+</div>
+
+<h4>Paso 2: Seleccionar fecha y horario</h4>
+<p>Al elegir una fecha, se ejecuta <code>cargarDisponibilidad()</code> que consulta <code>GET /api/profesionales/{id}/disponibilidad?fecha=YYYY-MM-DD</code>. El backend responde con los horarios libres y ocupados. Los ocupados se muestran deshabilitados visualmente.</p>
+
+<div class="code-block">
+<pre><span class="comment">// BookingCalendar.vue — Paso 2</span>
+<span class="keyword">const</span> <span class="function">cargarDisponibilidad</span> = <span class="keyword">async</span> () => {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> api.<span class="function">get</span>(
+    <span class="string">`/api/profesionales/${profesionalId}/disponibilidad`</span>,
+    { params: { fecha: fechaSeleccionada.value } }
+  )
+  horariosDisponibles.value = response.data.horarios_disponibles
+}</pre>
+</div>
+
+<h4>Paso 3: Confirmar reserva</h4>
+<p>Al confirmar, se envía <code>POST /api/turnos</code> con el payload que incluye <code>profesional_id</code>, <code>fecha_hora</code> y <code>motivo</code>. El backend responde con códigos HTTP específicos:</p>
+<ul>
+<li><strong>201 Created</strong> — Turno reservado exitosamente.</li>
+<li><strong>409 Conflict</strong> — El horario fue tomado por otro usuario mientras tanto.</li>
+<li><strong>422 Unprocessable Entity</strong> — Los datos enviados no pasaron la validación.</li>
+<li><strong>401 Unauthorized</strong> — El token de sesión expiró o es inválido.</li>
+</ul>
+
+<div class="code-block">
+<pre><span class="comment">// BookingCalendar.vue — Paso 3</span>
+<span class="keyword">const</span> <span class="function">confirmarReserva</span> = <span class="keyword">async</span> () => {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> response = <span class="keyword">await</span> api.<span class="function">post</span>(<span class="string">'/api/turnos'</span>, {
+      profesional_id: profesionalSeleccionado.value.id,
+      fecha_hora: horarioSeleccionado.value.fechaHoraISO,
+      motivo: motivo.value
+    })
+    reservaExitosa.value = <span class="keyword">true</span>
+  } <span class="keyword">catch</span> (error) {
+    <span class="keyword">if</span> (error.response.status === 409) {
+      errorReserva.value = <span class="string">'Horario no disponible'</span>
+    }
+  }
+}</pre>
+</div>
+
+<h3>3.4 Servicio api.js — Axios con interceptores</h3>
+<p>Axios es un cliente HTTP que permite hacer peticiones al backend. El archivo <code>api.js</code> centraliza la configuración:</p>
+<ul>
+<li><strong>baseURL:</strong> Define la URL del backend para no repetirla en cada llamada.</li>
+<li><strong>Interceptor de request:</strong> Agrega automáticamente el token Bearer en el header <code>Authorization</code> de cada petición.</li>
+<li><strong>Interceptor de response:</strong> Maneja errores globales: si recibe 401, redirige al login; si recibe 403, muestra advertencia; si recibe 500+, loguea el error.</li>
+</ul>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Interceptor</div>
+<p>Es una función que se ejecuta automáticamente antes o después de cada petición HTTP. Permite modificar la petición (ej: agregar headers) o la respuesta (ej: manejar errores) de forma centralizada, sin repetir código en cada componente.</p>
+</div>
+</section>
+
+<section class="section" id="backend">
+<h2><span class="num">4</span>Backend — Laravel 11</h2>
+
+<h3>4.1 ¿Qué es Laravel?</h3>
+<p>Laravel es un framework de PHP que proporciona una estructura organizada para desarrollar aplicaciones web. Incluye de fábrica: sistema de rutas, ORM (Eloquent), autenticación (Sanctum), validación de formularios, migraciones de base de datos, y testing (PHPUnit).</p>
+
+<h3>4.2 Endpoints de la API</h3>
+<table>
+<tr><th>Método</th><th>Ruta</th><th>Acceso</th><th>Descripción</th></tr>
+<tr><td><span class="badge b-blue">POST</span></td><td><code>/api/auth/register</code></td><td>Público</td><td>Crea usuario con rol cliente</td></tr>
+<tr><td><span class="badge b-blue">POST</span></td><td><code>/api/auth/login</code></td><td>Público</td><td>Login → devuelve Bearer Token</td></tr>
+<tr><td><span class="badge b-red">DELETE</span></td><td><code>/api/auth/logout</code></td><td>Autenticado</td><td>Revoca el token actual</td></tr>
+<tr><td><span class="badge b-green">GET</span></td><td><code>/api/profesionales</code></td><td>Autenticado</td><td>Lista profesionales activos</td></tr>
+<tr><td><span class="badge b-green">GET</span></td><td><code>/api/profesionales/{id}/disponibilidad</code></td><td>Autenticado</td><td>Horarios libres del día</td></tr>
+<tr><td><span class="badge b-blue">POST</span></td><td><code>/api/turnos</code></td><td>Rol: cliente</td><td>Reservar turno con lockForUpdate</td></tr>
+<tr><td><span class="badge b-green">GET</span></td><td><code>/api/turnos/profesional</code></td><td>Rol: profesional</td><td>Agenda del profesional</td></tr>
+<tr><td><span class="badge b-amber">PUT</span></td><td><code>/api/turnos/{id}/estado</code></td><td>Rol: profesional</td><td>Completar o cancelar turno</td></tr>
+</table>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Endpoint</div>
+<p>Es una URL específica de una API que acepta peticiones HTTP y devuelve una respuesta. Cada endpoint tiene una función definida: leer datos, crear registros, actualizar información o eliminar recursos. La combinación de método HTTP + URL identifica univocamente la operación.</p>
+</div>
+
+<h3>4.3 Decisiones clave de diseño</h3>
+
+<h4>Responsabilidad Única (S de SOLID)</h4>
+<p>Cada clase tiene una sola tarea:</p>
+<ul>
+<li>Las <strong>rutas</strong> enrutan: definen qué URL llama a qué controller.</li>
+<li>El <strong>StoreTurnoRequest</strong> valida: verifica que los datos cumplan reglas antes de que lleguen al controller.</li>
+<li>El <strong>TurnoController</strong> decide: ejecuta la lógica de negocio.</li>
+<li>Los <strong>modelos</strong> mapean la DB: representan tablas como objetos PHP.</li>
+</ul>
+<p>Un cambio en las reglas de validación no toca el controller. Un cambio en la lógica de negocio no toca la validación.</p>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: SOLID — Responsabilidad Única</div>
+<p>Es el primer principio de SOLID. Establece que una clase debe tener una única razón para cambiar. Si una clase hace demasiadas cosas, cualquier modificación puede romper funcionalidades no relacionadas. Separar responsabilidades reduce el acoplamiento y facilita el mantenimiento.</p>
+</div>
+
+<h4>Concurrencia — lockForUpdate()</h4>
+<p>La operación más crítica del sistema es la reserva de un turno. Sin protección, dos usuarios podrían reservar el mismo horario simultáneamente:</p>
+
+<div class="code-block">
+<pre><span class="comment">// TurnoController.php — store()</span>
+<span class="keyword">public function</span> <span class="function">store</span>(StoreTurnoRequest $request): JsonResponse
+{
+    $turno = DB::<span class="function">transaction</span>(<span class="keyword">function</span> () <span class="keyword">use</span> ($request) {
+        
+        <span class="comment">// Bloquear la fila mientras se verifica disponibilidad</span>
+        $ocupado = Turno::<span class="function">where</span>(<span class="string">'profesional_id'</span>, $request->profesional_id)
+            -><span class="function">where</span>(<span class="string">'fecha_hora'</span>, $request->fecha_hora)
+            -><span class="function">whereIn</span>(<span class="string">'estado'</span>, [<span class="string">'reservado'</span>, <span class="string">'confirmado'</span>])
+            -><span class="function">lockForUpdate</span>()
+            -><span class="function">exists</span>();
+
+        <span class="keyword">if</span> ($ocupado) {
+            <span class="function">abort</span>(409, <span class="string">'El horario ya no está disponible.'</span>);
+        }
+
+        <span class="keyword">return</span> Turno::<span class="function">create</span>([...]);
+    });
+
+    <span class="keyword">return</span> <span class="function">response</span>()-><span class="function">json</span>([...], 201);
+}</pre>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Transacción de base de datos</div>
+<p>Es un conjunto de operaciones que se ejecutan como una unidad indivisible. O todas las operaciones se completan exitosamente, o ninguna se aplica. Si ocurre un error en el medio, la base de datos vuelve al estado anterior (rollback). Esto garantiza la integridad de los datos.</p>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: lockForUpdate()</div>
+<p>Es una cláusula de SQL que bloquea las filas seleccionadas para que otras transacciones no puedan modificarlas hasta que la transacción actual termine (commit o rollback). En el contexto de la reserva: cuando un usuario consulta si un horario está libre, la fila se bloquea. Si otro usuario intenta consultar el mismo horario, debe esperar. Cuando el primero termina, el segundo lee que el horario ya está ocupado.</p>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Código HTTP 409 Conflict</div>
+<p>Es un código de estado HTTP que indica que la petición no pudo completarse debido a un conflicto con el estado actual del recurso. En este caso, significa que el horario que el usuario intenta reservar ya fue tomado por otro usuario.</p>
+</div>
+</section>
+
+<section class="section" id="testing">
+<h2><span class="num">5</span>Testing — PHPUnit 11</h2>
+
+<h3>5.1 ¿Por qué Feature Tests y no Unit Tests?</h3>
+<table>
+<tr><th>Feature Tests</th><th>Unit Tests</th></tr>
+<tr><td>Prueban el sistema completo: petición HTTP → autenticación → controller → base de datos → respuesta</td><td>Prueban una función aislada, sin base de datos ni peticiones reales</td></tr>
+<tr><td>Verifican que todas las partes funcionen juntas</td><td>Verifican la lógica interna de una sola función</td></tr>
+<tr><td>Más representativos de lo que experimenta el usuario</td><td>Más rápidos pero menos representativos del flujo real</td></tr>
+</table>
+
+<h3>5.2 Los 6 tests implementados</h3>
+<table>
+<tr><th>#</th><th>Test</th><th>Escenario</th><th>Resultado esperado</th></tr>
+<tr><td>1</td><td>Reserva exitosa</td><td>Cliente autenticado, horario libre</td><td>HTTP 201, turno en DB con estado reservado</td></tr>
+<tr><td>2</td><td>Doble reserva</td><td>Intentar reservar horario ocupado</td><td>HTTP 409, solo 1 registro en la tabla</td></tr>
+<tr><td>3</td><td>Sin autenticación</td><td>Petición sin Bearer Token</td><td>HTTP 401 automático</td></tr>
+<tr><td>4</td><td>Datos inválidos</td><td>Body vacío</td><td>HTTP 422 con detalle de errores</td></tr>
+<tr><td>5</td><td>Cambio de estado</td><td>Médico completa su turno</td><td>HTTP 200, estado actualizado en DB</td></tr>
+<tr><td>6</td><td>Turno ajeno</td><td>Médico modifica turno de colega</td><td>HTTP 403, estado sin cambios</td></tr>
+</table>
+
+<h3>5.3 Código del test de reserva exitosa</h3>
+<div class="code-block">
+<pre><span class="comment">// TurnoTest.php</span>
+<span class="keyword">public function</span> <span class="function">un_cliente_puede_reservar_un_turno_libre</span>(): <span class="keyword">void</span>
+{
+    <span class="comment">// 1. Crear un cliente autenticado</span>
+    $cliente = <span class="keyword">$this</span>-><span class="function">clienteAutenticado</span>();
+    
+    <span class="comment">// 2. Crear un profesional</span>
+    $profesional = <span class="keyword">$this</span>-><span class="function">profesional</span>();
+    
+    <span class="comment">// 3. Enviar petición POST para reservar</span>
+    $response = <span class="keyword">$this</span>-><span class="function">postJson</span>(<span class="string">'/api/turnos'</span>, [
+        <span class="string">'profesional_id'</span> => $profesional->id,
+        <span class="string">'fecha_hora'</span>     => <span class="function">now</span>()-><span class="function">addDays</span>(3)-><span class="function">format</span>(<span class="string">'Y-m-d H:i:s'</span>),
+        <span class="string">'motivo'</span>         => <span class="string">'Consulta de rutina'</span>,
+    ]);
+
+    <span class="comment">// 4. Verificar respuesta HTTP 201</span>
+    $response-><span class="function">assertStatus</span>(201);
+    
+    <span class="comment">// 5. Verificar que el turno existe en la base de datos</span>
+    <span class="keyword">$this</span>-><span class="function">assertDatabaseHas</span>(<span class="string">'turnos'</span>, [
+        <span class="string">'cliente_id'</span>     => $cliente->id,
+        <span class="string">'profesional_id'</span> => $profesional->id,
+        <span class="string">'estado'</span>         => <span class="string">'reservado'</span>,
+    ]);
+    
+    <span class="comment">// 6. Verificar que la respuesta incluye el estado</span>
+    $response-><span class="function">assertJsonPath</span>(<span class="string">'data.estado'</span>, <span class="string">'reservado'</span>);
+}</pre>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: assertDatabaseHas()</div>
+<p>Es un método de PHPUnit que verifica que exista al menos un registro en una tabla de la base de datos que cumpla con las condiciones especificadas. Si no encuentra el registro, el test falla. Esto permite verificar que la operación no solo devolvió el código HTTP correcto, sino que también persistió los datos correctamente.</p>
+</div>
+
+<h3>5.4 ¿Por qué SQLite en memoria?</h3>
+<p>Los tests verifican el comportamiento de la aplicación, no el motor de base de datos. SQLite <code>:memory:</code> permite que los 6 tests corran en aproximadamente 2 segundos sin servidor externo. La base se crea y destruye automáticamente en cada test gracias al trait <code>RefreshDatabase</code>.</p>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Trait RefreshDatabase</div>
+<p>Un trait en PHP es un mecanismo de reutilización de código que permite incluir métodos en múltiples clases. <code>RefreshDatabase</code> ejecuta las migraciones antes de cada test y las revierte después, garantizando que cada prueba comience con una base de datos limpia y no afecte a las demás.</p>
+</div>
+</section>
+
+<section class="section" id="cicd">
+<h2><span class="num">6</span>Despliegue y CI/CD</h2>
+
+<h3>6.1 ¿Qué es CI/CD?</h3>
+<p>CI/CD son las siglas de Continuous Integration / Continuous Deployment (Integración Continua / Despliegue Continuo).</p>
+<ul>
+<li><strong>Integración Continua (CI):</strong> Cada vez que un desarrollador sube código al repositorio, se ejecutan automáticamente las pruebas para verificar que no se rompió nada.</li>
+<li><strong>Despliegue Continuo (CD):</strong> Si las pruebas pasan, el código se despliega automáticamente en el servidor de producción.</li>
+</ul>
+
+<h3>6.2 Pipeline de GitHub Actions</h3>
+<p>El archivo <code>.github/workflows/test.yml</code> define un pipeline que se ejecuta automáticamente en cada push a la rama <code>main</code>:</p>
+
+<div class="code-block">
+<pre><span class="comment"># .github/workflows/test.yml</span>
+<span class="keyword">name</span>: Tests
+
+<span class="keyword">on</span>:
+  <span class="keyword">push</span>:
+    <span class="keyword">branches</span>: [main]
+  <span class="keyword">pull_request</span>:
+    <span class="keyword">branches</span>: [main]
+
+<span class="keyword">jobs</span>:
+  <span class="keyword">test</span>:
+    <span class="keyword">runs-on</span>: ubuntu-latest
+    <span class="keyword">steps</span>:
+      - <span class="keyword">uses</span>: actions/checkout@v4
+      - <span class="keyword">name</span>: Setup PHP
+        <span class="keyword">uses</span>: shivammathur/setup-php@v2
+        <span class="keyword">with</span>:
+          <span class="keyword">php-version</span>: <span class="string">'8.2'</span>
+          <span class="keyword">extensions</span>: mbstring, pdo, pdo_sqlite
+      - <span class="keyword">name</span>: Install dependencies
+        <span class="keyword">run</span>: composer install --no-interaction
+      - <span class="keyword">name</span>: Run migrations
+        <span class="keyword">run</span>: php artisan migrate
+        <span class="keyword">env</span>:
+          <span class="keyword">DB_CONNECTION</span>: sqlite
+          <span class="keyword">DB_DATABASE</span>: <span class="string">':memory:'</span>
+      - <span class="keyword">name</span>: Run tests
+        <span class="keyword">run</span>: php artisan test</pre>
+</div>
+
+<h3>6.3 Flujo del pipeline</h3>
+<ol>
+<li>Desarrollador hace push de código a <code>main</code>.</li>
+<li>GitHub Actions detecta el push y crea una máquina virtual limpia con Ubuntu.</li>
+<li>Instala PHP 8.2 y las extensiones necesarias.</li>
+<li>Descarga el código del repositorio.</li>
+<li>Ejecuta <code>composer install</code> para instalar dependencias.</li>
+<li>Crea la base de datos SQLite en memoria.</li>
+<li>Ejecuta las migraciones para crear las tablas.</li>
+<li>Corre los 6 tests de PHPUnit.</li>
+<li>Si todos pasan ✅, el código puede integrarse. Si alguno falla ❌, el merge queda bloqueado.</li>
+</ol>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Merge bloqueado</div>
+<p>Es una configuración de GitHub que impide que el código se integre a la rama principal si el pipeline de CI/CD no pasa. Esto garantiza que el código roto nunca llegue a producción. El equipo recibe una notificación indicando qué test falló y por qué.</p>
+</div>
+</section>
+
+<section class="section" id="seguridad">
+<h2><span class="num">7</span>Seguridad</h2>
+
+<h3>7.1 Cuatro capas de protección</h3>
+<table>
+<tr><th>Capa</th><th>Componente</th><th>Protege contra</th><th>HTTP</th></tr>
+<tr><td>1 — Identidad</td><td>Laravel Sanctum</td><td>Acceso sin token</td><td>401</td></tr>
+<tr><td>2 — Autorización</td><td>CheckRole</td><td>Rol incorrecto</td><td>403</td></tr>
+<tr><td>3 — Validación</td><td>StoreTurnoRequest</td><td>Datos malformados</td><td>422</td></tr>
+<tr><td>4 — Recurso</td><td>TurnoController</td><td>Modificar datos ajenos</td><td>403</td></tr>
+</table>
+
+<h3>7.2 Capa 1: Sanctum — Token de acceso</h3>
+<p>Cada petición privada necesita el header <code>Authorization: Bearer {token}</code>. Sin token válido, Laravel responde con HTTP 401 automáticamente (la petición nunca llega al controller).</p>
+<p>Los tokens se almacenan hasheados en la tabla <code>personal_access_tokens</code>. Al cerrar sesión, el token se elimina de la base de datos y deja de funcionar instantáneamente.</p>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Token Bearer</div>
+<p>Es un string opaco (no legible) que identifica a un usuario autenticado. El cliente lo envía en cada petición en el header <code>Authorization</code>. El servidor lo valida contra la base de datos. Si coincide, identifica al usuario. Si no existe o fue revocado, rechaza la petición.</p>
+</div>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Sanctum vs JWT</div>
+<p>JWT (JSON Web Token) es un token firmado digitalmente que contiene información del usuario. Su problema: no se puede revocar antes de que expire. Si un usuario cierra sesión, el JWT sigue siendo válido hasta su fecha de vencimiento. Sanctum almacena los tokens en la base de datos: al hacer logout se borran y dejan de funcionar de inmediato.</p>
+</div>
+
+<h3>7.3 Capa 2: CheckRole — Verificación de rol</h3>
+<p>El middleware <code>CheckRole</code> verifica que el usuario autenticado tenga el rol requerido para acceder al endpoint:</p>
+<ul>
+<li><code>role:cliente</code> — puede reservar, no puede ver agendas de médicos.</li>
+<li><code>role:profesional</code> — solo ve y gestiona sus propios turnos.</li>
+</ul>
+<p>Rol incorrecto → HTTP 403 Forbidden.</p>
+
+<h3>7.4 Capa 3: StoreTurnoRequest — Validación</h3>
+<p>Se ejecuta antes del controller. Verifica:</p>
+<ul>
+<li><code>profesional_id</code>: debe existir en la base de datos (rule: <code>exists:users,id</code>).</li>
+<li><code>fecha_hora</code>: debe ser en el futuro (rule: <code>after:now</code>) — no permite turnos en el pasado.</li>
+</ul>
+<p>Dato inválido → HTTP 422 con mensaje en español indicando exactamente qué falló.</p>
+
+<h3>7.5 Capa 4: Autorización por recurso</h3>
+<p>En <code>cambiarEstado()</code>, el controller verifica que <code>profesional_id === Auth::id()</code>. No alcanza con tener rol 'profesional': hay que ser el dueño de ese turno específico.</p>
+
+<h3>7.6 Protecciones adicionales</h3>
+<ul>
+<li><strong>$fillable:</strong> Lista blanca de campos que pueden ser asignados masivamente. Previene Mass Assignment Attack.</li>
+<li><strong>SoftDelete:</strong> Los turnos nunca se borran físicamente. El historial es permanente.</li>
+<li><strong>bcrypt:</strong> Las contraseñas se almacenan con <code>Hash::make()</code> que aplica bcrypt con salt automático.</li>
+<li><strong>Índice compuesto:</strong> <code>(profesional_id, fecha_hora)</code> optimiza la consulta de concurrencia.</li>
+</ul>
+
+<div class="concept">
+<div class="concept-title">📘 Concepto: Mass Assignment Attack</div>
+<p>Es una vulnerabilidad donde un atacante envía campos adicionales en una petición HTTP para modificar campos que no debería poder cambiar. Por ejemplo, enviar <code>rol: admin</code> al registrarse. La propiedad <code>$fillable</code> define explícitamente qué campos pueden ser asignados masivamente, bloqueando cualquier campo no autorizado.</p>
+</div>
+</section>
+
+<section class="section">
+<h2><span class="num">8</span>Conclusiones</h2>
+
+<h3>8.1 Puntos fuertes del proyecto</h3>
+<ul>
+<li>Resuelve un problema real con decisiones técnicas justificadas.</li>
+<li>La arquitectura desacoplada permite escalar cada capa de forma independiente.</li>
+<li>La solución a la concurrencia con <code>lockForUpdate()</code> + <code>DB::transaction()</code> garantiza integridad de datos.</li>
+<li>Los tests automatizados con el pipeline de CI/CD garantizan que cualquier cambio futuro sea verificado antes de integrarse.</li>
+<li>La seguridad implementa el principio de mínimo privilegio: cada actor solo accede a los recursos estrictamente necesarios.</li>
+</ul>
+
+<h3>8.2 Trabajo futuro</h3>
+<ul>
+<li>Notificaciones por email al reservar o cancelar.</li>
+<li>Panel de métricas: ausentismo, horarios más demandados, ocupación.</li>
+<li>App móvil usando la misma API de Laravel sin modificar el backend.</li>
+<li>Recordatorios automáticos por SMS 24 horas antes del turno.</li>
+</ul>
+
+<div class="alert">
+<div class="alert-icon">!</div>
+<p><strong>Nota para la defensa:</strong> Este documento técnico acompaña al código fuente del proyecto. Todos los archivos mencionados están disponibles en el repositorio de GitHub. El sistema puede instalarse con <code>composer install</code> y ejecutarse con <code>php artisan migrate --seed</code>. Los 6 tests corren con <code>php artisan test</code>.</p>
+</div>
+</section>
+
+<div class="footer">
+<p><strong>Programación de Vanguardia</strong> · Docente: Esteban Calcagno · Junio 2026</p>
+<p>VanguardiaShift — Sistema de Gestión de Turnos Profesionales · Arquitectura Desacoplada</p>
+</div>
+
+<script>
+document.querySelectorAll('.nav a').forEach(link=>{
+  link.addEventListener('click',e=>{
+    e.preventDefault();
+    document.querySelectorAll('.nav a').forEach(l=>l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelector(link.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+
+</div>
+</body>
+</html>
