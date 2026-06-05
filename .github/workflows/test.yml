@@ -29,7 +29,7 @@ jobs:
 
       - name: Instalar dependencias PHP
         working-directory: backend
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-audit
 
       - name: Configurar entorno de testing
         working-directory: backend
