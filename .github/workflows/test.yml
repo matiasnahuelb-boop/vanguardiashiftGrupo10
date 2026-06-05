@@ -3,38 +3,52 @@ name: Tests
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  verificar-estructura:
+  test:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Verificar estructura del proyecto
-        run: |
-          echo "=== Estructura del backend ==="
-          ls -la backend/
-          echo ""
-          echo "=== Controllers ==="
-          ls -la backend/app/Http/Controllers/
-          echo ""
-          echo "=== Tests disponibles ==="
-          ls -la backend/tests/Feature/
-          echo ""
-          echo "=== Migraciones ==="
-          ls -la backend/database/migrations/
-          echo ""
-          echo "=== Frontend ==="
-          ls -la frontend/src/components/ 2>/dev/null || echo "Frontend no encontrado"
-      
-      - name: Validar sintaxis PHP
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.2
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-      
-      - name: Verificar sintaxis de archivos PHP
+          extensions: mbstring, pdo, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Cache de dependencias Composer
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+
+      - name: Instalar dependencias PHP
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Configurar entorno de testing
+        working-directory: backend
         run: |
-          php -l backend/app/Http/Controllers/TurnoController.php
-          php -l backend/app/Http/Controllers/AuthController.php
-          php -l backend/app/Http/Controllers/ProfesionalController.php
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Ejecutar migraciones
+        working-directory: backend
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          APP_ENV: testing
+
+      - name: Ejecutar los 6 tests
+        working-directory: backend
+        run: php artisan test --parallel
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          APP_ENV: testing
