@@ -10,6 +10,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -21,24 +25,15 @@ jobs:
           extensions: mbstring, pdo, pdo_sqlite, sqlite3
           coverage: none
 
-      - name: Cache de dependencias Composer
-        uses: actions/cache@v4
-        with:
-          path: backend/vendor
-          key: composer-${{ hashFiles('backend/composer.lock') }}
-
       - name: Instalar dependencias PHP
-        working-directory: backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
 
       - name: Configurar entorno de testing
-        working-directory: backend
         run: |
           cp .env.example .env
           php artisan key:generate
 
       - name: Ejecutar migraciones
-        working-directory: backend
         run: php artisan migrate --force
         env:
           DB_CONNECTION: sqlite
@@ -46,8 +41,7 @@ jobs:
           APP_ENV: testing
 
       - name: Ejecutar los 6 tests
-        working-directory: backend
-        run: php artisan test --parallel
+        run: php artisan test
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
