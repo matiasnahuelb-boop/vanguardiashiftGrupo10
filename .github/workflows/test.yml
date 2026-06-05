@@ -1,64 +1,33 @@
-name: CI — Tests VanguardiaShift Backend
+name: Tests VanguardiaShift
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
   test:
-    name: PHP ${{ matrix.php-version }} — Feature Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.2']
-
     steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurar PHP ${{ matrix.php-version }}
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
-          extensions: mbstring, bcmath, pdo, pdo_sqlite, sqlite3, xml, json
-          coverage: none
-        env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: backend/vendor
-          key: ${{ runner.os }}-php${{ matrix.php-version }}-${{ hashFiles('backend/composer.lock') }}
+          php-version: '8.2'
+          extensions: pdo_sqlite
 
       - name: Instalar dependencias
-        working-directory: ./backend
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
+        run: composer install --no-interaction --no-security-blocking
+        working-directory: backend
 
-      - name: Configurar entorno de testing
-        working-directory: ./backend
-        run: |
-          cp .env.example .env
-          echo "DB_CONNECTION=sqlite"  >> .env
-          echo "DB_DATABASE=:memory:"  >> .env
-          echo "APP_ENV=testing"       >> .env
+      - name: Configurar .env
+        run: cp .env.example .env && php artisan key:generate
+        working-directory: backend
 
-      - name: Generar Application Key
-        working-directory: ./backend
-        run: php artisan key:generate
-
-      - name: Ejecutar migraciones
-        working-directory: ./backend
-        run: php artisan migrate --force
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-
-      - name: Ejecutar 6 tests PHPUnit
-        working-directory: ./backend
-        run: php artisan test --parallel
+      - name: Correr tests
+        run: php artisan test
+        working-directory: backend
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
