@@ -1,5 +1,4 @@
-Aquí está, con working-directory: ./backend agregado en cada step que lo necesita:
-yamlname: CI — Tests VanguardiaShift Backend
+name: CI — Tests VanguardiaShift Backend
 
 on:
   push:
