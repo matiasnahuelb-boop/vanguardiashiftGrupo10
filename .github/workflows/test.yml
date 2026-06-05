@@ -3,8 +3,6 @@ name: Tests VanguardiaShift
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   test:
@@ -22,12 +20,14 @@ jobs:
         working-directory: backend
 
       - name: Configurar .env
-        run: cp .env.example .env && php artisan key:generate
         working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
 
       - name: Correr tests
-        run: php artisan test
         working-directory: backend
+        run: php artisan test
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
