@@ -39,7 +39,7 @@ return new class extends Migration
             // Rol del usuario en el sistema
             // enum() restringe los valores posibles a nivel de base de datos
             // Esto es una capa adicional de validación más allá del código PHP
-            $table->enum('rol', ['cliente', 'profesional', 'admin'])->default('cliente');
+            $table->string('role')->default('cliente');
 
             // Campos exclusivos para profesionales (nullable para clientes)
             $table->string('especialidad')->nullable();  // Ej: "Cardiología", "Psicología"

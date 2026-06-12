@@ -20,14 +20,14 @@ class TurnoTest extends TestCase
 
     private function clienteAutenticado(): User
     {
-        $user = User::factory()->create(['rol' => 'cliente']);
+        $user = User::factory()->create(['role' => 'cliente']);
         Sanctum::actingAs($user);
         return $user;
     }
 
     private function profesional(): User
     {
-        return User::factory()->create(['rol' => 'profesional']);
+        return User::factory()->create(['role' => 'profesional']);
     }
 
     private function payload(int $profesionalId, string $fechaHora = null): array
@@ -108,7 +108,7 @@ class TurnoTest extends TestCase
         $profesional = $this->profesional();
         Sanctum::actingAs($profesional);
 
-        $cliente = User::factory()->create(['rol' => 'cliente']);
+        $cliente = User::factory()->create(['role' => 'cliente']);
         $turno   = Turno::factory()->create([
             'profesional_id' => $profesional->id,
             'cliente_id'     => $cliente->id,
@@ -125,8 +125,8 @@ class TurnoTest extends TestCase
     public function un_profesional_no_puede_modificar_el_turno_de_otro(): void
     {
         $duenio   = $this->profesional();
-        $ajeno    = User::factory()->create(['rol' => 'profesional']);
-        $cliente  = User::factory()->create(['rol' => 'cliente']);
+        $ajeno    = User::factory()->create(['role' => 'profesional']);
+        $cliente  = User::factory()->create(['role' => 'cliente']);
 
         $turno = Turno::factory()->create([
             'profesional_id' => $duenio->id,
