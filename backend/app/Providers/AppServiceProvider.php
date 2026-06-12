@@ -6,12 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        $this->app->singleton('files', function () {
-            return new \Illuminate\Filesystem\Filesystem;
-        });
-    }
-
+    public function register(): void {}
     public function boot(): void {}
 }
