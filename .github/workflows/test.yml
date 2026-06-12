@@ -29,22 +29,23 @@ jobs:
         run: |
           cd backend
           cp .env.example .env
+          sed -i 's/APP_KEY=/APP_KEY=base64:dGVzdGtleWZvcnZhbmd1YXJkaWFzaGlmdDEyMzQ1Njc=/' .env
           echo "DB_CONNECTION=sqlite" >> .env
           echo "DB_DATABASE=:memory:" >> .env
           echo "APP_ENV=testing" >> .env
 
-      - name: Generar Application Key
-        run: cd backend && php artisan key:generate
-
       - name: Ejecutar migraciones
         run: cd backend && php artisan migrate --force
         env:
+          APP_KEY: base64:dGVzdGtleWZvcnZhbmd1YXJkaWFzaGlmdDEyMzQ1Njc=
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
+          APP_ENV: testing
 
-      - name: Ejecutar tests
+      - name: Ejecutar 6 tests PHPUnit
         run: cd backend && php artisan test
         env:
+          APP_KEY: base64:dGVzdGtleWZvcnZhbmd1YXJkaWFzaGlmdDEyMzQ1Njc=
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
           APP_ENV: testing
