@@ -1,5 +1,0 @@
-﻿Archivo,			Qué demuestra
-`TurnoController.php`,	`lockForUpdate()` + transacciones
-`AuthController.php`,	Sanctum + tokens revocables
-`ProfesionalCont	roller.php`,Consultas a la base de datos
-`TurnoTest.php`,	6 tests de integración
