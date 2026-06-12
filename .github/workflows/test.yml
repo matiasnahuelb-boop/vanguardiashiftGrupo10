@@ -1,33 +1,60 @@
-name: Tests VanguardiaShift
+name: CI — Tests VanguardiaShift Backend
 
 on:
   push:
+    branches: [ main, develop ]
+  pull_request:
     branches: [ main ]
 
 jobs:
   test:
+    name: PHP 8.2 — Feature Tests
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: shivammathur/setup-php@v2
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.2
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: pdo_sqlite
+          extensions: mbstring, bcmath, pdo, pdo_sqlite, sqlite3, xml, json
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: ${{ runner.os }}-php8.2-${{ hashFiles('backend/composer.lock') }}
 
       - name: Instalar dependencias
-        run: composer install --no-interaction --no-security-blocking
-        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
-      - name: Configurar .env
-        working-directory: backend
+      - name: Configurar entorno de testing
         run: |
           cp .env.example .env
-          php artisan key:generate
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+          echo "APP_ENV=testing" >> .env
 
-      - name: Correr tests
-        working-directory: backend
-        run: php artisan test
+      - name: Generar Application Key
+        run: php artisan key:generate
+
+      - name: Ejecutar migraciones
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Ejecutar 6 tests PHPUnit
+        run: php artisan test --parallel
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
