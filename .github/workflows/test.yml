@@ -35,7 +35,7 @@ jobs:
           key: ${{ runner.os }}-php8.2-${{ hashFiles('backend/composer.lock') }}
 
       - name: Instalar dependencias
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts --no-security-blocking
 
       - name: Configurar entorno de testing
         run: |
